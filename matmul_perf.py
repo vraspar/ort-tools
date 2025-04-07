@@ -20,13 +20,21 @@ def create_matmul_chain_model(num_matmuls=100, input_shape=(512, 512), second_in
 
     # Generate dimensions
     dimensions = [input_shape]
+    if second_input_shape:
+        # First MatMul output shape
+        first_output_shape = (*input_shape[:-1], second_input_shape[-1])
+        dimensions.append(first_output_shape)
+    else:
+        # Use default weight shape for the first MatMul
+        dimensions.append((*input_shape[:-1], input_shape[-1], input_shape[-1]))
+
     if vary_dims:
-        for _ in range(num_matmuls):
+        for _ in range(1, num_matmuls):  # Start from the second MatMul
             m = dimensions[-1][-1]  # Previous last dimension becomes next second-to-last dimension
             n = np.random.randint(64, 1024)  # Random n
             dimensions.append((*dimensions[-1][:-2], m, n))
     else:
-        for _ in range(num_matmuls):
+        for _ in range(1, num_matmuls):  # Start from the second MatMul
             dimensions.append((*dimensions[-1][:-2], dimensions[-1][-1], input_shape[-1]))
 
     # Generate model name dynamically
