@@ -45,6 +45,9 @@ def create_matmul_chain_model(num_matmuls=100, input_shape=(512, 512), second_in
     if vary_dims:
         model_name += "_vary_dims"
 
+    if data_type == TensorProto.FLOAT16:
+        model_name += "_f16"
+
     # Generate output path
     output_path = f"{model_name}.onnx"
 
@@ -133,13 +136,17 @@ if __name__ == "__main__":
     parser.add_argument("--input_shape", type=int, nargs='+', default=[512, 512], help="Shape of the first input tensor (e.g., 2 256 2048) (default: 512x512)")
     parser.add_argument("--second_input_shape", type=int, nargs='+', help="Shape of the second input tensor (e.g., 2048 8192) for the first MatMul (default: None)")
     parser.add_argument("--vary_dims", action="store_true", help="Randomly vary dimensions (default: False)")
+    parser.add_argument("--data_type", type=str, choices=["float32", "float16"], default="float32", help="Data type for the tensors (default: float32)")
 
     args = parser.parse_args()
+
+    data_type = TensorProto.FLOAT if args.data_type == "float32" else TensorProto.FLOAT16
 
     # Create model
     create_matmul_chain_model(
         num_matmuls=args.num_matmuls,
         input_shape=tuple(args.input_shape),
         second_input_shape=tuple(args.second_input_shape) if args.second_input_shape else None,
-        vary_dims=args.vary_dims
+        vary_dims=args.vary_dims,
+        data_type=data_type
     )
